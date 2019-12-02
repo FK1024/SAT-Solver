@@ -1,6 +1,5 @@
 package algorithms;
 
-import com.sun.source.doctree.ValueTree;
 import dataStructure.Clause;
 import dataStructure.ClauseSet;
 import dataStructure.Variable;
@@ -128,7 +127,7 @@ public class CDCL {
         Variable lastVar = this.stack.lastElement();
         while (lastVar.getLevel() > level) {
             this.stack.pop();
-            lastVar.unassign();
+            lastVar.unassign(this.instance.getClauses(), this.instance.getVariables());
 //            for (Clause clause : this.instance.getClauses()) {
 //                if (clause.getLiterals().contains(lastVar.getId()) || clause.getLiterals().contains(-lastVar.getId())) {
 //                    // ToDo: check watching the new unassigned variable in this clause

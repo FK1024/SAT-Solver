@@ -109,6 +109,42 @@ public class Clause {
 		}
 	}
 
+	//Todo programmiert wie ein lappen um 24 uhr vllt noch verbessern
+	public ClauseState reWatch_openlit(HashMap<Integer, Variable> variables, int varid) {
+		int lit = 0;
+		for (Integer literal : this.literals) {
+			if (varid == Math.abs(literal)) {
+				lit = literal;
+			}
+		}
+
+		if (this.clauseState == ClauseState.EMPTY) {
+			this.lit1 = lit;
+			return ClauseState.UNIT;
+		}
+
+		for (Integer literal : this.literals) {
+			if (eval(variables.get(Math.abs(literal)).getState(), lit)) return ClauseState.SAT;
+		}
+
+		if (variables.get(Math.abs(lit1)).getState() == Variable.State.OPEN) {
+			if (variables.get(Math.abs(lit2)).getState() == Variable.State.OPEN) {
+				return ClauseState.SUCCESS;
+			} else {
+				this.lit2 = lit;
+				return ClauseState.SUCCESS;
+			}
+		} else {
+			if (variables.get(Math.abs(lit2)).getState() == Variable.State.OPEN) {
+				this.lit1 = lit;
+				return ClauseState.SUCCESS;
+			} else {
+				return ClauseState.EMPTY; // Shouldnt ever happen
+			}
+		}
+	}
+
+
 	public boolean eval(Variable.State state, Integer literal) {
 		return (state == Variable.State.TRUE && literal > 0) || (state == Variable.State.FALSE && literal < 0);
 	}

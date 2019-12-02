@@ -133,8 +133,14 @@ public class Variable {
 	}
 
 	// ToDo: update Clause States!
-	public void unassign() {
+	public void unassign(Vector<Clause> clauses, HashMap<Integer, Variable> variables) {
 		this.state = State.OPEN;
+
+		for (Clause clause : clauses) {
+			if (clause.getLiterals().contains(this)) {
+				clause.setClauseState(clause.reWatch_openlit(variables, Math.abs(this.getId())));
+			}
+		}
 	}
 
 	@Override
