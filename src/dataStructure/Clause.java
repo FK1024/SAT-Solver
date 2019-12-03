@@ -96,7 +96,7 @@ public class Clause {
 				return ClauseState.SUCCESS;
 			}
 		}
-		// no new literal found to watch ToDo: maybe reset the current assigned to 0 to indicate that it is no more watched
+		// no new literal found to watch
 		int otherLit = litIsLit1 ? this.lit2 : this.lit1;
 
 		Variable.State otherLitVarState = variables.get(Math.abs(otherLit)).getState();
@@ -109,8 +109,7 @@ public class Clause {
 		}
 	}
 
-	//Todo programmiert wie ein lappen um 24 uhr vllt noch verbessern
-	public ClauseState reWatch_openlit(HashMap<Integer, Variable> variables, int varid) {
+	public ClauseState reWatch_openlit(HashMap<Integer, Variable> variables, int varid, Vector<Clause> units) {
 		int lit = 0;
 		for (Integer literal : this.literals) {
 			if (varid == Math.abs(literal)) {
@@ -120,6 +119,7 @@ public class Clause {
 
 		if (this.clauseState == ClauseState.EMPTY) {
 			this.lit1 = lit;
+			units.add(this);
 			return ClauseState.UNIT;
 		}
 
@@ -128,18 +128,24 @@ public class Clause {
 		}
 
 		if (variables.get(Math.abs(lit1)).getState() == Variable.State.OPEN) {
-			if (variables.get(Math.abs(lit2)).getState() == Variable.State.OPEN) {
-				return ClauseState.SUCCESS;
+			if (lit2 != 0 && variables.get(Math.abs(lit2)).getState() == Variable.State.OPEN) {
+				return this.clauseState;
 			} else {
 				this.lit2 = lit;
+				if (this.clauseState == ClauseState.UNIT) {
+					units.remove(this);
+				}
 				return ClauseState.SUCCESS;
 			}
 		} else {
-			if (variables.get(Math.abs(lit2)).getState() == Variable.State.OPEN) {
+			if (lit2 != 0 && variables.get(Math.abs(lit2)).getState() == Variable.State.OPEN) {
 				this.lit1 = lit;
+				if (this.clauseState == ClauseState.UNIT) {
+					units.remove(this);
+				}
 				return ClauseState.SUCCESS;
 			} else {
-				return ClauseState.EMPTY; // Shouldnt ever happen
+				return ClauseState.EMPTY; // Shouldn't ever happen
 			}
 		}
 	}
@@ -168,22 +174,11 @@ public class Clause {
 	public int getUnassigned(HashMap<Integer, Variable> variables) {
 		if (variables.get(Math.abs(lit1)).getState() == Variable.State.OPEN) {
 			return lit1;
-		} else if (variables.get(Math.abs(lit2)).getState() == Variable.State.OPEN) {
+		} else if (lit2 != 0 && variables.get(Math.abs(lit2)).getState() == Variable.State.OPEN) {
 			return lit2;
 		} else {
 			return 0;
 		}
-	}
-
-	/**
-	 * Returns the phase of the variable within this clause.
-	 * 
-	 * @param num
-	 *            variable ID (>= 1)
-	 * @return true, if variable is positive within this clause, otherwise false
-	 */
-	public boolean getPolarity(int num) {
-		return this.literals.contains(num);
 	}
 
 	/**

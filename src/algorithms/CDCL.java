@@ -39,16 +39,20 @@ public class CDCL {
                 }
             }
         }
-        System.out.println("no resolvente found");
+        //System.out.println("no resolvente found");
         res.addAll(c1.getLiterals());
-        res.addAll(c2.getLiterals());
+        for (Integer lit2 : c2.getLiterals()) {
+            if (!res.contains(lit2)) {
+                res.add(lit2);
+            }
+        }
         return new Clause(res, this.instance.getVariables());
     }
 
     // Diese Methode berechnet die 1UIP Klausel ausgehend von einer leeren Klausel conflict (= unterster Grund)
     // und einem Grund reason (= vorletzer Grund)
     private Clause get1UIP(Clause conflict, Clause reason) {
-        int stackIndex = this.stack.size() - 1;
+        int stackIndex = this.stack.size() - 2;
 
         Clause currResolvente = resolve(conflict, reason);
         Clause nextReason = this.stack.get(stackIndex).getReason();
@@ -60,9 +64,17 @@ public class CDCL {
         return currResolvente;
     }
 
-    //Die Methode lernt eine neue Klausel (1UIP) aus dem Konflikt und gibt das Level zurück, zu dem zurückgesprungen werden muss
+    // Die Methode lernt eine neue Klausel (1UIP) aus dem Konflikt und gibt das Level zurück, zu dem zurückgesprungen werden muss
     private int analyseConflict(Clause conflict) {
-        Clause firstUIP = get1UIP(conflict, this.stack.pop().getReason());
+        Clause firstUIP;
+
+        Clause reason = this.stack.lastElement().getReason(); //this.stack.pop().getReason();
+        if (reason == null) { // Decision
+            firstUIP = conflict;
+        } else {
+            firstUIP = get1UIP(conflict, reason);
+        }
+
         this.instance.addClause(firstUIP);
         HashSet<Integer> levels = new HashSet<Integer>();
         for (Integer lit : firstUIP.getLiterals()) {
@@ -127,12 +139,7 @@ public class CDCL {
         Variable lastVar = this.stack.lastElement();
         while (lastVar.getLevel() > level) {
             this.stack.pop();
-            lastVar.unassign(this.instance.getClauses(), this.instance.getVariables());
-//            for (Clause clause : this.instance.getClauses()) {
-//                if (clause.getLiterals().contains(lastVar.getId()) || clause.getLiterals().contains(-lastVar.getId())) {
-//                    // ToDo: check watching the new unassigned variable in this clause
-//                }
-//            }
+            lastVar.unassign(this.instance.getClauses(), this.instance.getVariables(), this.instance.getUnits());
             lastVar = this.stack.lastElement();
         }
     }

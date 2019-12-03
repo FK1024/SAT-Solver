@@ -117,10 +117,10 @@ public class Variable {
 						Clause.ClauseState clauseState = watchedCopy.get(c).reWatch(variables, lit);
 						switch (clauseState) {
 							case EMPTY:
-//								variables.get(this.id).watched = watchedCopy;
-//								this.watched = watchedCopy;
+								clause.setClauseState(Clause.ClauseState.EMPTY);
 								return clause;
 							case UNIT:
+								clause.setClauseState(Clause.ClauseState.UNIT);
 								units.add(clause);
 						}
 					} else {
@@ -132,13 +132,12 @@ public class Variable {
 		return null;
 	}
 
-	// ToDo: update Clause States!
-	public void unassign(Vector<Clause> clauses, HashMap<Integer, Variable> variables) {
+	public void unassign(Vector<Clause> clauses, HashMap<Integer, Variable> variables, Vector<Clause> units) {
 		this.state = State.OPEN;
 
 		for (Clause clause : clauses) {
-			if (clause.getLiterals().contains(this)) {
-				clause.setClauseState(clause.reWatch_openlit(variables, Math.abs(this.getId())));
+			if (clause.getLiterals().contains(this.id) || clause.getLiterals().contains(-this.id)) {
+				clause.setClauseState(clause.reWatch_openlit(variables, Math.abs(this.getId()), units));
 			}
 		}
 	}

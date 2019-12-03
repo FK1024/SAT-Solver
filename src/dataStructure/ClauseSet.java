@@ -91,8 +91,9 @@ public class ClauseSet {
 	 * @return true, if an empty clause exists, otherwise false.
 	 */
 	public Clause unitPropagation(Stack<Variable> stack, int level) {
+		Clause unitClause;
 		while (!this.units.isEmpty()) {
-			Clause unitClause = this.units.get(0);
+			unitClause = this.units.get(0);
 			this.units.remove(0);
 			int unitLit = unitClause.getUnassigned(this.variables);
 			if (unitLit == 0) {
@@ -101,8 +102,21 @@ public class ClauseSet {
 			}
 			Variable unitVar = this.variables.get(Math.abs(unitLit));
 			unitVar.assign(unitLit > 0, this.variables, this.units, stack, unitClause, level);
+			Clause emptyClause = getFirstEmptyClause();
+			if (emptyClause != null) {
+				return emptyClause;
+			}
 		}
 
+		return null;
+	}
+
+	private Clause getFirstEmptyClause() {
+		for (Clause clause : this.clauses) {
+			if (clause.getClauseState() == Clause.ClauseState.EMPTY) {
+				return clause;
+			}
+		}
 		return null;
 	}
 
